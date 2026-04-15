@@ -77,6 +77,7 @@ function getMockData() {
       id: `mock-${i}-${Date.now()}`,
       name: `${name} #${tokenId}`,
       collection: name,
+      collection_verified: i % 3 === 0, // Mock some verified collections
       image_url: `https://picsum.photos/seed/${name.replace(/ /g, "")}${i}/400/400`,
       permalink: "#",
       chain: chains[i % chains.length],
@@ -87,6 +88,7 @@ function getMockData() {
       token_id: String(tokenId),
       contract_address: "0x1234567890123456789012345678901234567890",
       creator_address: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+      creator_name: i % 2 === 0 ? "Verified Creator" : null,
     };
   });
 }
@@ -159,6 +161,8 @@ async function fetchFromOpenSea(limit) {
           l.maker_asset_bundle?.assets?.[0]?.token_id ?? "?",
         contract_address: l.maker_asset_bundle?.assets?.[0]?.asset_contract?.address ?? null,
         creator_address: l.maker_asset_bundle?.assets?.[0]?.creator?.address ?? null,
+        creator_name: l.maker_asset_bundle?.assets?.[0]?.creator?.user?.username ?? null,
+        collection_verified: l.maker_asset_bundle?.assets?.[0]?.collection?.safelist_request_status === "verified",
       }));
 
     // If OpenSea returns nothing free, supplement with recently minted via events
@@ -214,6 +218,8 @@ async function fetchRecentMintsOpenSea(apiKey, limit) {
         token_id: e.nft?.identifier ?? "?",
         contract_address: e.nft?.contract ?? null,
         creator_address: e.to_address ?? null,
+        creator_name: null, // OpenSea events usually don't have creator username directly
+        collection_verified: false, // Default to false for events unless we fetch collection detail
       }));
 
     return { data: items.slice(0, limit), source: "opensea-events" };

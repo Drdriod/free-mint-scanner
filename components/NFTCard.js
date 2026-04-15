@@ -1,6 +1,6 @@
 /**
  * components/NFTCard.js
- * Modern Apple-inspired NFT card component
+ * Premium Apple-inspired NFT card component
  */
 import Image from "next/image";
 import { useState } from "react";
@@ -28,12 +28,18 @@ const CopyIcon = () => (
   </svg>
 );
 
+const VerifiedIcon = ({ size = 16, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={`text-primary ${className}`}>
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+  </svg>
+);
+
 export default function NFTCard({ nft, index = 0 }) {
   const [imgError, setImgError] = useState(false);
   const [copied, setCopied] = useState(null);
   const chain = CHAIN_LABELS[nft.chain] ?? { label: nft.chain?.toUpperCase() ?? "?", color: "#6B6B85" };
 
-  const delay = `${index * 30}ms`;
+  const delay = `${index * 50}ms`;
 
   const copyToClipboard = (e, text, label) => {
     e.stopPropagation();
@@ -46,8 +52,8 @@ export default function NFTCard({ nft, index = 0 }) {
 
   return (
     <article
-      className="nft-card rounded-2xl border border-border-light bg-secondary overflow-hidden group"
-      style={{ animationDelay: delay, opacity: 0 }}
+      className="group relative bg-bg-primary rounded-[32px] border border-border-light overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10 animate-slide-up"
+      style={{ animationDelay: delay }}
       onClick={() => nft.permalink && nft.permalink !== "#" && window.open(nft.permalink, "_blank", "noopener,noreferrer")}
       role="link"
       tabIndex={0}
@@ -55,103 +61,115 @@ export default function NFTCard({ nft, index = 0 }) {
       aria-label={`View ${nft.name} on OpenSea`}
     >
       {/* Image Container */}
-      <div className="relative w-full aspect-square bg-secondary overflow-hidden">
+      <div className="relative w-full aspect-square bg-bg-secondary overflow-hidden">
         {!imgError && nft.image_url ? (
           <Image
             src={nft.image_url}
             alt={nft.name ?? "NFT"}
             fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-110"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
             onError={() => setImgError(true)}
             unoptimized
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-secondary">
-            <span className="text-4xl text-secondary">?</span>
+          <div className="w-full h-full flex items-center justify-center bg-bg-secondary text-secondary">
+            <span className="text-6xl font-bold opacity-10">?</span>
           </div>
         )}
 
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-
-        {/* Free Mint Badge */}
-        <div className="absolute top-3 left-3">
-          <span className="badge inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent/20 text-accent border border-accent/30 rounded-lg text-xs font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+        {/* Status Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        {/* Floating Badges */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-md rounded-2xl text-[11px] font-bold text-accent shadow-lg border border-accent/10">
+            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
             FREE MINT
           </span>
+          {nft.collection_verified && (
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/90 backdrop-blur-md rounded-2xl text-[11px] font-bold text-white shadow-lg">
+              <VerifiedIcon size={14} className="text-white" />
+              VERIFIED
+            </span>
+          )}
         </div>
 
         {/* Chain Badge */}
         <div
-          className="absolute top-3 right-3 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white backdrop-blur-md"
+          className="absolute top-4 right-4 px-4 py-2 rounded-2xl text-[11px] font-bold text-white backdrop-blur-md shadow-lg"
           style={{
-            background: `${chain.color}dd`,
-            border: `1px solid ${chain.color}99`,
+            background: `${chain.color}cc`,
+            border: `1px solid ${chain.color}55`,
           }}
         >
           {chain.label}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-4 space-y-3">
-        {/* Collection */}
-        <p className="text-xs text-secondary font-medium truncate">
-          {nft.collection ?? "Unknown Collection"}
-        </p>
+      {/* Content Section */}
+      <div className="p-8 space-y-4">
+        {/* Meta Header */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="text-xs font-bold text-secondary uppercase tracking-widest truncate">
+              {nft.collection ?? "Unknown Collection"}
+            </p>
+            {nft.collection_verified && <VerifiedIcon size={14} />}
+          </div>
+          <span className="text-[10px] font-bold text-secondary whitespace-nowrap bg-bg-secondary px-2 py-1 rounded-lg">
+            {timeSince(nft.minted_at)}
+          </span>
+        </div>
 
         {/* Title */}
-        <h3 className="text-sm font-semibold text-text-primary truncate leading-tight">
+        <h3 className="text-xl font-bold text-text-primary leading-tight group-hover:text-primary transition-colors">
           {nft.name ?? "Unnamed NFT"}
         </h3>
 
-        {/* Time */}
-        <p className="text-xs text-secondary">
-          {timeSince(nft.minted_at)}
-        </p>
-
-        {/* Divider */}
-        <div className="h-px bg-border-light" />
-
-        {/* Addresses Section */}
-        <div className="space-y-2">
-          {/* Contract Address */}
+        {/* Address Grid */}
+        <div className="pt-4 space-y-3 border-t border-border-light">
+          {/* Contract */}
           <div
-            className="flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-primary/5 transition-colors cursor-pointer group/addr"
+            className="group/addr flex items-center justify-between p-3 rounded-2xl bg-bg-secondary/50 hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all cursor-pointer"
             onClick={(e) => copyToClipboard(e, nft.contract_address, "contract")}
           >
-            <span className="text-xs text-secondary font-medium">Contract</span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-mono text-text-primary group-hover/addr:text-primary transition-colors">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">Contract</span>
+              <span className="text-sm font-mono font-semibold text-text-primary group-hover/addr:text-primary transition-colors">
                 {formatAddress(nft.contract_address)}
               </span>
+            </div>
+            <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-secondary group-hover/addr:text-primary shadow-sm">
               <CopyIcon />
             </div>
           </div>
 
-          {/* Creator Address */}
+          {/* Creator */}
           <div
-            className="flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-primary/5 transition-colors cursor-pointer group/addr"
+            className="group/addr flex items-center justify-between p-3 rounded-2xl bg-bg-secondary/50 hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all cursor-pointer"
             onClick={(e) => copyToClipboard(e, nft.creator_address, "creator")}
           >
-            <span className="text-xs text-secondary font-medium">Creator</span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-mono text-text-primary group-hover/addr:text-primary transition-colors">
-                {formatAddress(nft.creator_address)}
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">
+                {nft.creator_name ? "Verified Creator" : "Creator Wallet"}
               </span>
+              <span className="text-sm font-mono font-semibold text-text-primary group-hover/addr:text-primary transition-colors">
+                {nft.creator_name ? nft.creator_name : formatAddress(nft.creator_address)}
+              </span>
+            </div>
+            <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-secondary group-hover/addr:text-primary shadow-sm">
               <CopyIcon />
             </div>
           </div>
-
-          {/* Copy feedback */}
-          {copied && (
-            <div className="text-xs text-accent font-medium text-center py-1 bg-accent/10 rounded-lg">
-              ✓ Copied!
-            </div>
-          )}
         </div>
+
+        {/* Copy Success Feedback */}
+        {copied && (
+          <div className="absolute inset-x-8 bottom-8 py-3 bg-primary text-white text-xs font-bold text-center rounded-2xl animate-fade-in shadow-xl">
+            ✓ Address Copied to Clipboard
+          </div>
+        )}
       </div>
     </article>
   );
