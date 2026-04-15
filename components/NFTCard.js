@@ -27,6 +27,14 @@ export default function NFTCard({ nft, index = 0 }) {
 
   const delay = `${index * 50}ms`;
 
+  const copyToClipboard = (e, text) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+    alert("Copied to clipboard!");
+  };
+
+  const formatAddress = (addr) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "N/A";
+
   return (
     <article
       className="nft-card card-enter rounded-sm border border-border bg-panel overflow-hidden cursor-pointer group"
@@ -91,6 +99,28 @@ export default function NFTCard({ nft, index = 0 }) {
           <span className="font-display text-[10px] text-dim">
             {timeSince(nft.minted_at)}
           </span>
+        </div>
+
+        {/* Addresses */}
+        <div className="pt-2 mt-2 border-t border-border/50 space-y-1.5">
+          <div 
+            className="flex items-center justify-between group/addr hover:bg-void/50 p-1 rounded-sm transition-colors"
+            onClick={(e) => copyToClipboard(e, nft.contract_address)}
+          >
+            <span className="font-display text-[9px] text-dim tracking-wider uppercase">Contract</span>
+            <span className="font-mono text-[10px] text-ghost group-hover/addr:text-acid transition-colors">
+              {formatAddress(nft.contract_address)}
+            </span>
+          </div>
+          <div 
+            className="flex items-center justify-between group/addr hover:bg-void/50 p-1 rounded-sm transition-colors"
+            onClick={(e) => copyToClipboard(e, nft.creator_address)}
+          >
+            <span className="font-display text-[9px] text-dim tracking-wider uppercase">Creator</span>
+            <span className="font-mono text-[10px] text-ghost group-hover/addr:text-acid transition-colors">
+              {formatAddress(nft.creator_address)}
+            </span>
+          </div>
         </div>
       </div>
 

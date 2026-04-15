@@ -73,7 +73,7 @@ function getMockData() {
   return Array.from({ length: 12 }, (_, i) => {
     const name = `${adjectives[i % adjectives.length]} ${nouns[i % nouns.length]}`;
     const tokenId = Math.floor(Math.random() * 9999) + 1;
-    return {
+      return {
       id: `mock-${i}-${Date.now()}`,
       name: `${name} #${tokenId}`,
       collection: name,
@@ -85,6 +85,8 @@ function getMockData() {
       is_free: true,
       minted_at: new Date(now - i * 3 * 60000).toISOString(),
       token_id: String(tokenId),
+      contract_address: "0x1234567890123456789012345678901234567890",
+      creator_address: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
     };
   });
 }
@@ -155,6 +157,8 @@ async function fetchFromOpenSea(limit) {
           : new Date().toISOString(),
         token_id:
           l.maker_asset_bundle?.assets?.[0]?.token_id ?? "?",
+        contract_address: l.maker_asset_bundle?.assets?.[0]?.asset_contract?.address ?? null,
+        creator_address: l.maker_asset_bundle?.assets?.[0]?.creator?.address ?? null,
       }));
 
     // If OpenSea returns nothing free, supplement with recently minted via events
@@ -208,6 +212,8 @@ async function fetchRecentMintsOpenSea(apiKey, limit) {
           ? new Date(e.event_timestamp * 1000).toISOString()
           : new Date().toISOString(),
         token_id: e.nft?.identifier ?? "?",
+        contract_address: e.nft?.contract ?? null,
+        creator_address: e.to_address ?? null,
       }));
 
     return { data: items.slice(0, limit), source: "opensea-events" };
